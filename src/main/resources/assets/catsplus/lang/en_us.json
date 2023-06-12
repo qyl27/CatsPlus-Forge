@@ -1,0 +1,12 @@
+{
+  "itemGroup.catsplus.catsplus_group": "Cats Plus!",
+  "item.catsplus.cat_bag": "Cat Bag",
+  "item.catsplus.cat_bag.desc.no_cat": "No Cat Inside.",
+  "item.catsplus.cat_bag.desc.has_cat": "Cat Inside!",
+  "item.catsplus.totemeow": "Totemeow",
+  "effect.catsplus.cattify":"Cattify",
+  "item.minecraft.potion.effect.cattify": "Potion of Cattify",
+  "item.minecraft.splash_potion.effect.cattify": "Splash Potion of Cattify",
+  "item.minecraft.lingering_potion.effect.cattify": "Lingering Potion of Cattify",
+  "item.minecraft.tipped_arrow.effect.cattify": "Arrow of Cattify"
+}

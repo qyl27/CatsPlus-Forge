@@ -1,0 +1,143 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'maven-publish'
+    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.2-SNAPSHOT'
+}
+
+group = 'cx.rain.mc.catsplus'
+archivesBaseName = 'catsplus'
+
+version = '1.19.4-1.0.0'
+if (System.getenv("JITPACK") == "true") {
+    version += "-${System.getenv("VERSION")}"
+}
+var release = false
+if (release || (System.getenv("MOD_RELEASE") == 'true')) {
+    version += '-release'
+} else {
+    version += '-dev'
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+loom {
+    silentMojangMappingsLicense()
+
+    accessWidenerPath = file("src/main/resources/catsplus.accesswidener")
+
+    forge {
+        mixinConfig new File(projectDir, 'src/main/resources/catsplus.mixins.json').toString()
+
+        convertAccessWideners = true
+        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+    }
+
+    runs {
+        data {
+            data()
+            programArgs '--all', '--mod', 'catsplus'
+            programArgs '--output', file('src/generated/resources').absolutePath
+            programArgs '--existing', file('src/main/resources').absolutePath
+        }
+    }
+}
+
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, " +
+        "JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), " +
+        "Arch: ${System.getProperty 'os.arch'}"
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    filesMatching("*/**/*.toml") {
+        expand(project.properties)
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+repositories {
+    flatDir {
+        dir 'libs'
+    }
+
+    maven {
+        name = 'Jitpack'
+        url = 'https://jitpack.io'
+    }
+
+    maven {
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
+    }
+
+    maven {
+        name = "Curse maven"
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.20"
+    forge "net.minecraftforge:forge:1.20-46.0.14"
+
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-1.19.3:2023.03.12@zip")
+    }
+
+    modRuntimeOnly 'curse.maven:nbtedit-reborn-678133:4577129'
+    modRuntimeOnly 'com.ptsmods:devlogin:3.1.1'
+}
+jar {
+    archiveClassifier.set('')
+
+    manifest {
+        attributes([
+                "Specification-Title"     : "catsplus",
+                "Specification-Vendor"    : "qyl27",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : "qyl27",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
